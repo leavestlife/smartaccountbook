@@ -150,6 +150,9 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
 
     if (error) {
       console.error('Error clearing transactions:', error);
+      alert('초기화에 실패했습니다: ' + error.message);
+    } else {
+      setTransactions([]); // 즉시 UI 반영
     }
   };
 
