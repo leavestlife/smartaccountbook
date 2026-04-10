@@ -27,6 +27,8 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
 
   // 1. 초기 데이터 로드 (Supabase)
   const fetchTransactions = useCallback(async (code: string) => {
+    if (!supabase) return;
+
     const { data, error } = await supabase
       .from('transactions')
       .select('*')
@@ -44,7 +46,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (familyCode) {
+    if (familyCode && supabase) {
       fetchTransactions(familyCode);
 
       // 2. 실시간 구독 (Realtime)
@@ -92,7 +94,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   };
 
   const addTransactions = async (newTxs: Transaction[]) => {
-    if (!familyCode) return;
+    if (!familyCode || !supabase) return;
 
     // Supabase에 저장할 형식으로 변환 (family_code 추가)
     const txsWithCode = newTxs.map(tx => ({
@@ -111,7 +113,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   };
 
   const updateTransactionCategory = async (id: string, newCategory: string) => {
-    if (!familyCode) return;
+    if (!familyCode || !supabase) return;
 
     const { error } = await supabase
       .from('transactions')
@@ -129,6 +131,10 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     if (!familyCode) return;
     
     if (window.confirm("정말로 클라우드의 모든 내역을 삭제하시겠습니까? (이 작업은 되돌릴 수 없습니다)")) {
+      if (!supabase) {
+        alert("데이터베이스가 연결되지 않았습니다. 환경 변수를 확인해 주세요.");
+        return;
+      }
       const { error } = await supabase
         .from('transactions')
         .delete()
