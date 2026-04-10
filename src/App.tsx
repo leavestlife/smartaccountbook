@@ -4,6 +4,7 @@ import { Dashboard } from './components/Dashboard';
 import { Transactions } from './components/Transactions';
 import { Archive } from './components/Archive';
 import { Modal } from './components/ui/Modal';
+import { Card } from './components/ui/Card';
 import { Wallet, PieChart, List, HardDrive, Trash2, AlertTriangle } from 'lucide-react';
 import './index.css';
 
@@ -75,6 +76,11 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<Tab>('DASHBOARD');
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const { transactions, clearTransactions, familyCode, logout } = useFinance();
+
+  const handleReset = async () => {
+    await clearTransactions();
+    setIsResetModalOpen(false);
+  };
 
   if (!familyCode) {
     return <LoginScreen />;

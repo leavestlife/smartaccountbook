@@ -31,18 +31,27 @@ export const CATEGORY_KEYWORDS: Record<string, string[]> = {
 export const CUSTOM_CATEGORY_KEY = "CUSTOM_CATEGORY_MAP";
 
 export function getCustomMappings(): Record<string, string> {
-  const data = localStorage.getItem(CUSTOM_CATEGORY_KEY);
-  return data ? JSON.parse(data) : {};
+  try {
+    const data = localStorage.getItem(CUSTOM_CATEGORY_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch (e) {
+    console.error("Failed to read custom mappings from localStorage", e);
+    return {};
+  }
 }
 
 export function saveCustomMapping(keyword: string, category: string) {
-  const mappings = getCustomMappings();
-  const cleanKeyword = keyword.replace(/\s+/g, "").toLowerCase();
-  
-  if (!cleanKeyword || cleanKeyword.length < 1) return; // 빈칸 오염 방지
+  try {
+    const mappings = getCustomMappings();
+    const cleanKeyword = keyword.replace(/\s+/g, "").toLowerCase();
+    
+    if (!cleanKeyword || cleanKeyword.length < 1) return; // 빈칸 오염 방지
 
-  mappings[cleanKeyword] = category;
-  localStorage.setItem(CUSTOM_CATEGORY_KEY, JSON.stringify(mappings));
+    mappings[cleanKeyword] = category;
+    localStorage.setItem(CUSTOM_CATEGORY_KEY, JSON.stringify(mappings));
+  } catch (e) {
+    console.error("Failed to save custom mapping to localStorage", e);
+  }
 }
 
 // 텍스트 정제 함수

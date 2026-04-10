@@ -40,8 +40,6 @@ const DUMMY_CATEGORIES: CategoryStat[] = [
   { name: '쇼핑', value: 280000, icon: '🛍️' },
 ];
 
-const DUMMY_INCOME  = 3150000;
-const DUMMY_EXPENSE = 1920000;
 const RANK_MEDALS = ['🥇', '🥈', '🥉'];
 const DEFAULT_BUDGET = 3000000;
 
@@ -171,7 +169,7 @@ export function Dashboard() {
   }, [stats, hasRealData, budget]);
 
   const budgetPercent = Math.min(100, Math.round((stats.expense / (budget || 1)) * 100));
-  const displayCategories = stats.topCategories.length > 0 ? stats.topCategories : CATEGORY_ICONS as any && []; // Ensure empty if no actual categories
+  const displayCategories = stats.topCategories;
   const maxCatValue = displayCategories[0]?.value || 1;
 
   const handleBudgetSubmit = () => {

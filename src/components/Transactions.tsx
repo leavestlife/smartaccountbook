@@ -68,10 +68,8 @@ export function Transactions() {
   const handleCategoryChange = (id: string, description: string, newCategory: string) => {
     updateTransactionCategory(id, newCategory);
     if (newCategory !== '미분류') {
-      const isCustom = window.confirm(`"${description}" 항목을 앞으로 계속 "${newCategory}"(으)로 분류할까요?\n(사용자 지정 사전에 저장됩니다.)`);
-      if (isCustom) {
-        saveCustomMapping(description, newCategory);
-      }
+      // 별도의 확인 창 없이 자동으로 사용자 사전에 저장하여 '스마트'하게 학습함
+      saveCustomMapping(description, newCategory);
     }
   };
 

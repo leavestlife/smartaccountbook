@@ -128,21 +128,15 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const updateBudget = (amount: number) => setBudget(amount);
 
   const clearTransactions = async () => {
-    if (!familyCode) return;
+    if (!familyCode || !supabase) return;
     
-    if (window.confirm("정말로 클라우드의 모든 내역을 삭제하시겠습니까? (이 작업은 되돌릴 수 없습니다)")) {
-      if (!supabase) {
-        alert("데이터베이스가 연결되지 않았습니다. 환경 변수를 확인해 주세요.");
-        return;
-      }
-      const { error } = await supabase
-        .from('transactions')
-        .delete()
-        .eq('family_code', familyCode);
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('family_code', familyCode);
 
-      if (error) {
-        console.error('Error clearing transactions:', error);
-      }
+    if (error) {
+      console.error('Error clearing transactions:', error);
     }
   };
 

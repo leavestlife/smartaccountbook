@@ -109,7 +109,7 @@ export async function parseExcel(file: File): Promise<Transaction[]> {
         }
 
         if (headerRowIndex === -1) {
-          dateIdx = 0; descIdx = 1; outIdx = 2; inIdx = 3; headerRowIndex = 0;
+          throw new Error("지원하지 않는 엑셀 파일 형식입니다. 날짜, 내역, 금액(또는 입/출금) 컬럼이 포함된 파일을 업로드해 주세요.");
         }
 
         for (let i = headerRowIndex + 1; i < rows.length; i++) {
