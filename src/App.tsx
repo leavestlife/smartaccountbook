@@ -15,16 +15,70 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'ARCHIVE', label: '보관소', icon: <HardDrive className="w-4 h-4" /> },
 ];
 
+function LoginScreen() {
+  const [code, setCode] = useState('');
+  const { login } = useFinance();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (code.trim()) {
+      login(code);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50 dark:bg-black">
+      <Card className="apple-card w-full max-w-sm p-8 space-y-8 animate-in zoom-in-95 duration-300">
+        <div className="text-center space-y-2">
+          <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ color: 'var(--accent-primary)' }}>
+            <Wallet className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>스마트 가계부</h2>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>배우자와 함께 쓰는 실시간 가계부</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wider ml-1" style={{ color: 'var(--text-secondary)' }}>가족 공유 코드</label>
+            <input
+              type="password"
+              placeholder="코드를 입력하세요"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border-none outline-none transition-all"
+              style={{ 
+                backgroundColor: 'rgba(0,0,0,0.05)', 
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-color)'
+              }}
+              autoFocus
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full py-4 rounded-xl font-bold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+            style={{ backgroundColor: 'var(--text-primary)' }}
+          >
+            입장하기
+          </button>
+        </form>
+        
+        <p className="text-center text-[11px] opacity-40" style={{ color: 'var(--text-secondary)' }}>
+          개인정보는 안전하게 보호됩니다.
+        </p>
+      </Card>
+    </div>
+  );
+}
+
 function AppContent() {
   const [activeTab, setActiveTab] = useState<Tab>('DASHBOARD');
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-  const { transactions, clearTransactions } = useFinance();
+  const { transactions, clearTransactions, familyCode, logout } = useFinance();
 
-  const handleReset = () => {
-    clearTransactions();
-    setIsResetModalOpen(false);
-    // 피드백은 모달 닫힘 이후 부드럽게 알림 등으로 처리할 수 있으나 현재는 간단히 유지
-  };
+  if (!familyCode) {
+    return <LoginScreen />;
+  }
 
   return (
     <div className="min-h-screen p-6 md:p-12 max-w-6xl mx-auto space-y-10">
@@ -36,26 +90,49 @@ function AppContent() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-primary">스마트 가계부</h1>
-            <p style={{ color: "var(--text-secondary)" }}>엑셀만 넣으면 끝나는 자동 분석</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-500 uppercase">Live Sync</span>
+              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>가족 코드: {familyCode}</p>
+            </div>
           </div>
         </div>
         
-        {/* Reset Button */}
-        {transactions.length > 0 && (
+        <div className="flex items-center gap-3">
+          {/* Reset Button */}
+          {transactions.length > 0 && (
+            <button 
+              onClick={() => setIsResetModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors hover:opacity-80 active:scale-95 z-50"
+              style={{ 
+                color: "var(--accent-expense)", 
+                backgroundColor: "rgba(255,59,48,0.1)", 
+                borderRadius: "var(--radius-pill)",
+                cursor: "pointer"
+              }}
+            >
+              <Trash2 className="w-4 h-4" />
+              초기화
+            </button>
+          )}
+
+          {/* Logout Button */}
           <button 
-            onClick={() => setIsResetModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors hover:opacity-80 active:scale-95 z-50"
+            onClick={() => {
+              if (window.confirm("공유 코드 접속을 종료할까요?")) {
+                logout();
+              }
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors hover:bg-black/5 dark:hover:bg-white/10 z-50"
             style={{ 
-              color: "var(--accent-expense)", 
-              backgroundColor: "rgba(255,59,48,0.1)", 
+              color: "var(--text-secondary)", 
+              border: "1px solid var(--border-color)",
               borderRadius: "var(--radius-pill)",
               cursor: "pointer"
             }}
           >
-            <Trash2 className="w-4 h-4" />
-            초기화
+            로그아웃
           </button>
-        )}
+        </div>
       </header>
 
       {/* Tabs / Segmented Control — always visible */}

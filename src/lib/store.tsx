@@ -1,55 +1,143 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import type { Transaction, MonthlyArchive } from './types';
+import type { Transaction } from './types';
+import { supabase } from './supabase';
 
 interface FinanceState {
   transactions: Transaction[];
-  addTransactions: (txs: Transaction[]) => void;
-  updateTransactionCategory: (id: string, newCategory: string) => void;
+  addTransactions: (txs: Transaction[]) => Promise<void>;
+  updateTransactionCategory: (id: string, newCategory: string) => Promise<void>;
   budget: number;
   updateBudget: (amount: number) => void;
-  clearTransactions: () => void;
+  clearTransactions: () => Promise<void>;
+  familyCode: string | null;
+  login: (code: string) => void;
+  logout: () => void;
 }
 
 const FinanceContext = createContext<FinanceState | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = 'FINANCE_TRANSACTIONS';
-
 export function FinanceProvider({ children }: { children: ReactNode }) {
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
-  });
-
+  const [familyCode, setFamilyCode] = useState<string | null>(() => localStorage.getItem('FAMILY_CODE'));
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budget, setBudget] = useState<number>(() => {
     const saved = localStorage.getItem('FINANCE_BUDGET');
     return saved ? parseInt(saved) : 3000000;
   });
 
+  // 1. 초기 데이터 로드 (Supabase)
+  const fetchTransactions = useCallback(async (code: string) => {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('family_code', code)
+      .order('date', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching transactions:', error);
+      return;
+    }
+
+    if (data) {
+      setTransactions(data as Transaction[]);
+    }
+  }, []);
+
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(transactions));
-  }, [transactions]);
+    if (familyCode) {
+      fetchTransactions(familyCode);
+
+      // 2. 실시간 구독 (Realtime)
+      const channel = supabase
+        .channel('schema-db-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'transactions',
+            filter: `family_code=eq.${familyCode}`,
+          },
+          () => {
+            // 변경사항 발생 시 다시 불러오기
+            fetchTransactions(familyCode);
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else {
+      setTransactions([]);
+    }
+  }, [familyCode, fetchTransactions]);
 
   useEffect(() => {
     localStorage.setItem('FINANCE_BUDGET', budget.toString());
   }, [budget]);
 
-  const addTransactions = (newTxs: Transaction[]) => {
-    // 중복 제거 없이 무조건 붙이는 방식 (원할 경우 고유 id로 처리 가능)
-    setTransactions((prev) => [...prev, ...newTxs]);
+  const login = (code: string) => {
+    const cleanCode = code.trim();
+    if (cleanCode) {
+      setFamilyCode(cleanCode);
+      localStorage.setItem('FAMILY_CODE', cleanCode);
+    }
   };
 
-  const updateTransactionCategory = (id: string, newCategory: string) => {
-    setTransactions((prev) => prev.map(t => t.id === id ? { ...t, category: newCategory } : t));
+  const logout = () => {
+    setFamilyCode(null);
+    setTransactions([]);
+    localStorage.removeItem('FAMILY_CODE');
+  };
+
+  const addTransactions = async (newTxs: Transaction[]) => {
+    if (!familyCode) return;
+
+    // Supabase에 저장할 형식으로 변환 (family_code 추가)
+    const txsWithCode = newTxs.map(tx => ({
+      ...tx,
+      family_code: familyCode
+    }));
+
+    const { error } = await supabase
+      .from('transactions')
+      .insert(txsWithCode);
+
+    if (error) {
+      console.error('Error adding transactions:', error);
+      alert('데이터 저장 중 오류가 발생했습니다.');
+    }
+  };
+
+  const updateTransactionCategory = async (id: string, newCategory: string) => {
+    if (!familyCode) return;
+
+    const { error } = await supabase
+      .from('transactions')
+      .update({ category: newCategory })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating category:', error);
+    }
   };
 
   const updateBudget = (amount: number) => setBudget(amount);
 
-  const clearTransactions = () => {
-    setTransactions([]);
-    setBudget(3000000); // Reset to default budget as well on total reset
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
-    localStorage.removeItem('FINANCE_BUDGET');
+  const clearTransactions = async () => {
+    if (!familyCode) return;
+    
+    if (window.confirm("정말로 클라우드의 모든 내역을 삭제하시겠습니까? (이 작업은 되돌릴 수 없습니다)")) {
+      const { error } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('family_code', familyCode);
+
+      if (error) {
+        console.error('Error clearing transactions:', error);
+      }
+    }
   };
 
   return (
@@ -59,7 +147,10 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       updateTransactionCategory, 
       clearTransactions,
       budget,
-      updateBudget 
+      updateBudget,
+      familyCode,
+      login,
+      logout
     }}>
       {children}
     </FinanceContext.Provider>
