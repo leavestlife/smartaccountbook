@@ -1,0 +1,109 @@
+/* Card Styles */
+.apple-card {
+  background-color: var(--surface-color);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-primary);
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+}
+
+.apple-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.apple-card-header {
+  padding: 1.5rem 1.5rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.apple-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
+
+.apple-card-content {
+  padding: 1.5rem;
+  padding-top: 0;
+}
+
+/* Button Styles */
+.apple-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  outline: none;
+}
+
+.apple-btn:active {
+  transform: scale(0.96);
+}
+
+.apple-btn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Variants */
+.apple-btn-default {
+  background-color: var(--accent-primary);
+  color: #fff;
+  border: none;
+}
+.apple-btn-default:hover {
+  background-color: #006ce4;
+}
+
+.apple-btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+.apple-btn-outline:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+
+.apple-btn-glass {
+  background-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  border: 1px solid rgba(255,255,255, 0.2);
+}
+.apple-btn-glass:hover {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Sizes */
+.apple-btn-default { /* size default */
+  height: 2.5rem;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+}
+.apple-btn-sm {
+  height: 2rem;
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
+}
+.apple-btn-lg {
+  height: 3rem;
+  padding: 0 1.5rem;
+  font-size: 1rem;
+  border-radius: var(--radius-md); /* lg usually less pill */
+}
+.apple-btn-icon {
+  height: 2.5rem;
+  width: 2.5rem;
+  padding: 0;
+}

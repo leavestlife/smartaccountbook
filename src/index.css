@@ -1,0 +1,82 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+:root {
+  /* Apple Palette - Light Mode */
+  --bg-color: #F5F5F7;
+  --surface-color: rgba(255, 255, 255, 0.7);
+  --border-color: rgba(0, 0, 0, 0.05);
+  --text-primary: #1D1D1F;
+  --text-secondary: #86868B;
+  
+  --accent-primary: #007AFF;
+  --accent-income: #34C759;
+  --accent-expense: #FF3B30;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.06);
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 9999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Apple Palette - Dark Mode */
+    --bg-color: #000000;
+    --surface-color: rgba(28, 28, 30, 0.7);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --text-primary: #F5F5F7;
+    --text-secondary: #98989D;
+    
+    --accent-primary: #0A84FF;
+    --accent-income: #30D158;
+    --accent-expense: #FF453A;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  background-color: var(--surface-color);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+}
+
+/* Typography Utilities */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+p {
+  font-weight: 400;
+}
+
+/* Resets */
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+input {
+  font-family: inherit;
+}
