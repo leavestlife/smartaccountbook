@@ -106,13 +106,13 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
 
     // Supabase DB 스키마(snake_case)에 맞춰 데이터 변환
     const txsToInsert = newTxs.map(tx => ({
+      id: tx.id,  // ← id 명시적으로 전달 (누락되어 있었음)
       date: tx.date,
       description: tx.description,
       amount: tx.amount,
-      is_income: tx.isIncome, // 매핑 핵심
+      is_income: tx.isIncome,
       category: tx.category,
       family_code: familyCode
-      // id는 DB에서 자동 생성하거나 암묵적으로 전달
     }));
 
     const { error } = await supabase
@@ -121,7 +121,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
 
     if (error) {
       console.error('Error adding transactions:', error);
-      alert('데이터 저장 중 오류가 발생했습니다. (DB 필드 불일치 또는 권한 문제)');
+      alert('데이터 저장 중 오류가 발생했습니다: ' + error.message);
     }
   };
 
@@ -142,7 +142,10 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
 
   const clearTransactions = async () => {
     if (!familyCode || !supabase) return;
-    
+
+    // 먼저 UI를 즉시 비워서 실시간 구독 재로드와 충돌 방지
+    setTransactions([]);
+
     const { error } = await supabase
       .from('transactions')
       .delete()
@@ -151,8 +154,8 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     if (error) {
       console.error('Error clearing transactions:', error);
       alert('초기화에 실패했습니다: ' + error.message);
-    } else {
-      setTransactions([]); // 즉시 UI 반영
+      // 실패 시 다시 로드
+      fetchTransactions(familyCode);
     }
   };
 
