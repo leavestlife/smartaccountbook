@@ -41,7 +41,16 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     }
 
     if (data) {
-      setTransactions(data as Transaction[]);
+      // DB 필드(is_income)를 앱 필드(isIncome)로 변환
+      const mappedData = data.map(item => ({
+        id: item.id,
+        date: item.date,
+        description: item.description,
+        amount: Number(item.amount),
+        isIncome: item.is_income,
+        category: item.category
+      }));
+      setTransactions(mappedData as Transaction[]);
     }
   }, []);
 
@@ -61,7 +70,6 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
             filter: `family_code=eq.${familyCode}`,
           },
           () => {
-            // 변경사항 발생 시 다시 불러오기
             fetchTransactions(familyCode);
           }
         )
@@ -96,19 +104,24 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const addTransactions = async (newTxs: Transaction[]) => {
     if (!familyCode || !supabase) return;
 
-    // Supabase에 저장할 형식으로 변환 (family_code 추가)
-    const txsWithCode = newTxs.map(tx => ({
-      ...tx,
+    // Supabase DB 스키마(snake_case)에 맞춰 데이터 변환
+    const txsToInsert = newTxs.map(tx => ({
+      date: tx.date,
+      description: tx.description,
+      amount: tx.amount,
+      is_income: tx.isIncome, // 매핑 핵심
+      category: tx.category,
       family_code: familyCode
+      // id는 DB에서 자동 생성하거나 암묵적으로 전달
     }));
 
     const { error } = await supabase
       .from('transactions')
-      .insert(txsWithCode);
+      .insert(txsToInsert);
 
     if (error) {
       console.error('Error adding transactions:', error);
-      alert('데이터 저장 중 오류가 발생했습니다.');
+      alert('데이터 저장 중 오류가 발생했습니다. (DB 필드 불일치 또는 권한 문제)');
     }
   };
 
